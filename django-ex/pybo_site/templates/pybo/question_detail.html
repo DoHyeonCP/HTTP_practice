@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load pybo_filter %}
+
+{% block content %}
+  <!-- 사용자오류 표시 -->
+  {% if messages %}
+    <div class="alert alert-danger my-3" role="alert">
+      {% for message in messages %}
+        <strong>{{ message.tags }}</strong>
+        <ul>
+          <li>{{ message.message }}</li>
+        </ul>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <h2 class="border-bottom py-2">
+    <i class="fa-solid fa-clipboard-question"></i>
+    {{ question.subject }}
+  </h2>
+
+  <div class="row my-3">
+    <div class="col-1">
+      <!-- 추천 영역-->
+      <div class="bg-light text-center p-3 border font-weight-bolder mb-2">
+        {{question.voter.count}}</div>
+        <a href="{% url 'pybo:vote_question' question.id  %}" data-uri="{% url 'pybo:vote_question' question.id  %}" class="recommend btn btn-sm btn-secondary btn-block my-2">
+          {% if user in question.voter.all %}
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-balloon-heart-fill" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8.49 10.92C19.412 3.382 11.28-2.387 8 .986 4.719-2.387-3.413 3.382 7.51 10.92l-.234.468a.25.25 0 1 0 .448.224l.04-.08c.009.17.024.315.051.45.068.344.208.622.448 1.102l.013.028c.212.422.182.85.05 1.246-.135.402-.366.751-.534 1.003a.25.25 0 0 0 .416.278l.004-.007c.166-.248.431-.646.588-1.115.16-.479.212-1.051-.076-1.629-.258-.515-.365-.732-.419-1.004a2.376 2.376 0 0 1-.037-.289l.008.017a.25.25 0 1 0 .448-.224l-.235-.468ZM6.726 1.269c-1.167-.61-2.8-.142-3.454 1.135-.237.463-.36 1.08-.202 1.85.055.27.467.197.527-.071.285-1.256 1.177-2.462 2.989-2.528.234-.008.348-.278.14-.386Z"/>
+          </svg>
+          {% else %}
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-balloon-heart" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="m8 2.42-.717-.737c-1.13-1.161-3.243-.777-4.01.72-.35.685-.451 1.707.236 3.062C4.16 6.753 5.52 8.32 8 10.042c2.479-1.723 3.839-3.29 4.491-4.577.687-1.355.587-2.377.236-3.061-.767-1.498-2.88-1.882-4.01-.721L8 2.42Zm-.49 8.5c-10.78-7.44-3-13.155.359-10.063.045.041.089.084.132.129.043-.045.087-.088.132-.129 3.36-3.092 11.137 2.624.357 10.063l.235.468a.25.25 0 1 1-.448.224l-.008-.017c.008.11.02.202.037.29.054.27.161.488.419 1.003.288.578.235 1.15.076 1.629-.157.469-.422.867-.588 1.115l-.004.007a.25.25 0 1 1-.416-.278c.168-.252.4-.6.533-1.003.133-.396.163-.824-.049-1.246l-.013-.028c-.24-.48-.38-.758-.448-1.102a3.177 3.177 0 0 1-.052-.45l-.04.08a.25.25 0 1 1-.447-.224l.235-.468ZM6.013 2.06c-.649-.18-1.483.083-1.85.798-.131.258-.245.689-.08 1.335.063.244.414.198.487-.043.21-.697.627-1.447 1.359-1.692.217-.073.304-.337.084-.398Z"/>
+          </svg>
+          {% endif %}
+          추천
+        </a>       
+    </div>
+
+    <div class="col-11">
+      <!-- 질문영역-->
+      <div class="card">
+        <div class="card-body">
+          <div class="card-text">
+            {% autoescape off %}
+              {{ question.content }}
+            {% endautoescape %}
+          </div>
+          <div class="d-flex justify-content-end">
+            {% if question.modify_date %}
+              <div class="badge badge-success p-2 mx-3 text-left">
+                <div class="mb-2">수정일</div>
+                <div>
+                  <i class="fa-regular fa-clock"></i>
+                  {{ question.modify_date | date:'Y-m-d H:i' }}
+                </div>
+              </div>
+            {% endif %}
+            <div class="badge badge-primary p-2 text-left">
+              <div class="mb-2">
+                <img class="avatar-sm" src="https://randomuser.me/api/portraits/men/{{question.author.id}}.jpg"/>
+                {{ question.author.username }}</div>
+              <div>
+                <i class="fa-regular fa-clock"></i>
+                {{ question.create_date | date:'Y-m-d H:i' }}
+              </div>
+            </div>
+          </div>
+
+          {% if request.user == question.author %}
+            <div class="my-3">
+              <a href="{% url 'pybo:question_modify' question.id %}" class="btn btn-sm btn-outline-secondary">
+                <i class="fa-solid fa-pen-to-square mr-2"></i>
+                수정</a>
+              <a href="#" class="delete btn btn-sm btn-outline-secondary text-danger" data-uri="{% url 'pybo:question_delete' question.id  %}">
+                <i class="fa-regular fa-trash-can"></i>
+                삭제</a>
+            </div>
+          {% endif %}
+        </div>
+
+        {% include 'pybo/comment_question.html' %}
+
+      </div>
+    </div>
+  </div>
+
+  {% include 'pybo/answer_list.html' %}
+
+  {% include 'pybo/answer_create_form.html' %}
+
+  <a href="{% url 'pybo:index' %}">목록보기</a>
+{% endblock content %}
+
+{% block script %}
+  <script>
+    $(document).ready(function () {
+      console.log('로딩 완료');
+      let btns = $('.delete'); // 변수 선언 키워드 let
+      btns.on('click', function () {
+        console.log('click 발생');
+        let answer = confirm('정말 삭제할까요?');
+        if (answer) {
+          location.href = $(this).data('uri');
+        }
+      });
+
+      // $('.recommend').on('click', function () {
+      //  if (confirm('정말로 추천하시겠습니까?')) {
+      //    location.href = $(this).data('uri');
+      //  }
+      // });
+
+      console.log('click 이벤트 핸들러 등록 완료');
+    });
+  </script>
+{% endblock script %}
